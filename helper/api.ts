@@ -1,14 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import { IWeatherData } from '../model/types';
 
 const OPEN_WEATHER_API_KEY = '28a8f05c963557091bfe4208e2e56763'
 
-export const getWeatherData = async (city:string) => {
-    try {
-        const res = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${OPEN_WEATHER_API_KEY}&units=metric`);
-        console.log(res);
-        return Promise.resolve(res);
-    } catch (error) {
-        console.log(error);
-        return Promise.reject(error)
-    }
+export const getWeatherData = async (city: string): Promise<AxiosResponse> => {
+    return axios.get<IWeatherData>(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${OPEN_WEATHER_API_KEY}&units=metric`);
+
 }

@@ -8,7 +8,19 @@ type THomeProps = NativeStackScreenProps<StackNavigationParams, "home">;
 
 export default function Home({ navigation }: THomeProps) {
   useEffect(() => {
-    getWeatherData('delhi');
+    async function apiCalling() {
+      try {
+        const res = await getWeatherData("delhi");
+        if (res.status === 200) {
+          console.log(res.data);
+        } else {
+          console.log(res);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    apiCalling();
   }, []);
 
   return (
