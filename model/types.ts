@@ -8,7 +8,7 @@ export interface IWeatherData {
 
 export interface City {
     name: string;
-    country: string;
+    country?: string;
     population?: number;
     timezone?: number;
     sunrise?: number;
@@ -17,7 +17,7 @@ export interface City {
 
 
 
- export interface List {
+export interface List {
     dt: number;
     main: Main;
     weather: Weather[];
@@ -58,10 +58,16 @@ interface Main {
     temp_kf: number;
 }
 
+export interface IApiError {
+    cod: string;
+    message: string;
+}
+
+
 //type for Redux data type
 
 export interface IStore {
-    isLoading:boolean,
-    isError:string,
-    data:IWeatherData
+    isLoading: boolean,
+    isError: string,
+    data: IWeatherData
 }

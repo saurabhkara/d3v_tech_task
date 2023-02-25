@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { IStore, IWeatherData} from "../model/types";
+import { IStore} from "../model/types";
 import { getWeatherDataThunk } from "./reduxThunk";
 // import { RootState } from "./store";
 
@@ -30,9 +30,10 @@ const weatherSlice = createSlice({
         builder.addCase(getWeatherDataThunk.pending,(state)=>{
             state.isLoading=true
         })
-        .addCase(getWeatherDataThunk.rejected,(state)=>{
+        .addCase(getWeatherDataThunk.rejected,(state, action)=>{
+            console.log(action.payload)
             state.isLoading=false;
-            state.isError="Something wrong occured"
+            state.isError="something went wrong"
         })
         .addCase(getWeatherDataThunk.fulfilled,(state,action)=>{
             state.isLoading=false;
