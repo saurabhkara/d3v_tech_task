@@ -1,21 +1,23 @@
+
+//API Data type
 export interface IWeatherData {
     cod: string;
-    list: List[];
+    list?: List[];
     city: City;
 }
 
-interface City {
+export interface City {
     name: string;
     country: string;
-    population: number;
-    timezone: number;
-    sunrise: number;
-    sunset: number;
+    population?: number;
+    timezone?: number;
+    sunrise?: number;
+    sunset?: number;
 }
 
 
 
-interface List {
+ export interface List {
     dt: number;
     main: Main;
     weather: Weather[];
@@ -54,4 +56,12 @@ interface Main {
     grnd_level: number;
     humidity: number;
     temp_kf: number;
+}
+
+//type for Redux data type
+
+export interface IStore {
+    isLoading:boolean,
+    isError:string,
+    data:IWeatherData
 }
