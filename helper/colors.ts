@@ -5,7 +5,9 @@ const COLORS = {
     secondary:'#666666',
     white:'#fff',
     black:'black',
-    yellow:'#C7D701'
+    yellow:'#C7D701',
+    dark:'#323163',
+    secondaryDark:'#1E1D54'
 
 }
 

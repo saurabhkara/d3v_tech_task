@@ -8,7 +8,6 @@ import {
   Image,
   FlatList,
   ListRenderItemInfo,
-  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -22,6 +21,9 @@ import Card from "../components/Card";
 import { List } from "../model/types";
 import { getCurrentTime } from "../helper/timeConverter";
 import { updateData } from "../redux/weatherSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loader from "../components/Loader";
+import ErrorMsg from "../components/ErrorMsg";
 
 type THomeProps = NativeStackScreenProps<StackNavigationParams, "home">;
 
@@ -33,12 +35,30 @@ export default function Home({ navigation }: THomeProps) {
   const currTemp: string = data.list[0]
     ? data.list[0].main.temp.toFixed() + ""
     : isError;
+
+  const currWeather = data.list[0] ? data.list[0].weather[0].description : "";
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    dispatch(getWeatherDataThunk("mumbai")).then(() => {
-      dispatch(updateData({ lastUpdated: getCurrentTime() }));
-    });
+    async function fetchCity() {
+      try {
+        const city = await AsyncStorage.getItem("city");
+        if (city) {
+          dispatch(getWeatherDataThunk(city)).then(() => {
+            dispatch(updateData({ lastUpdated: getCurrentTime() }));
+          });
+        } else {
+          //setting city for first time user
+          await AsyncStorage.setItem("city", "delhi");
+          dispatch(getWeatherDataThunk("delhi")).then(() => {
+            dispatch(updateData({ lastUpdated: getCurrentTime() }));
+          });
+        }
+      } catch (error) {
+        console.log("Error");
+      }
+    }
+    fetchCity();
   }, [refresh]);
 
   return (
@@ -73,15 +93,12 @@ export default function Home({ navigation }: THomeProps) {
           }}
         >
           {isLoading ? (
-            <View style={styles.loading}>
-              <ActivityIndicator color={COLORS.lightPrimary} size={"large"} />
-              <Text style={{ color: COLORS.lightPrimary }}>Loading ...</Text>
-            </View>
+            <Loader />
+          ) : isError ? (
+            <ErrorMsg onPress={()=>setRefresh(!refresh)}/>
           ) : (
             <>
-              <Text style={styles.status}>
-                {data.list[0].weather[0].description}
-              </Text>
+              <Text style={styles.status}>{currWeather}</Text>
               <View style={{ flexDirection: "row" }}>
                 <Text style={styles.temperature}>{currTemp}</Text>
                 <Text style={styles.degree}>°</Text>
@@ -102,15 +119,12 @@ export default function Home({ navigation }: THomeProps) {
 
         <View style={{ height: "30%", marginTop: 20 }}>
           <FlatList
-            ListEmptyComponent={() => (
-              <View>
-                <Text>Loading........</Text>
-              </View>
-            )}
+            ListEmptyComponent={() => <Loader />}
             data={data.list}
             renderItem={({ item }: ListRenderItemInfo<List>) => (
               <Card list={item} />
             )}
+            contentContainerStyle={data.list.length===0 && {flex:1, justifyContent:'center'}}
             keyExtractor={(item) => item.dt_txt}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -169,11 +183,5 @@ const styles = StyleSheet.create({
   cel: {
     fontSize: 40,
     lineHeight: 110,
-  },
-  loading: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    color: COLORS.lightPrimary,
   },
 });

@@ -13,8 +13,8 @@ const initialState :IStore = {
         cod:'',
         list:[],
         city:{
-            name:'delhi',
-            country:'In', 
+            name:'',
+            country:'', 
         }
     }
 }
