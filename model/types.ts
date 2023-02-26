@@ -2,7 +2,7 @@
 //API Data type
 export interface IWeatherData {
     cod: string;
-    list?: List[];
+    list: List[];
     city: City;
 }
 
@@ -70,4 +70,5 @@ export interface IStore {
     isLoading: boolean,
     isError: string,
     data: IWeatherData
+    lastUpdated?:string,
 }

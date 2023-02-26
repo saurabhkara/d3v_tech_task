@@ -7,28 +7,39 @@ import {
   StyleSheet,
   Image,
   FlatList,
+  ListRenderItemInfo,
+  ActivityIndicator,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useSelector, useDispatch } from "react-redux";
-import { Entypo, EvilIcons } from "@expo/vector-icons";
+import { Entypo, EvilIcons, Feather } from "@expo/vector-icons";
 import { getWeatherDataThunk } from "../redux/reduxThunk";
 import { StackNavigationParams } from "../App";
 import { AppDispatch, RootState } from "../redux/store";
 import COLORS from "../helper/colors";
 import Card from "../components/Card";
+import { List } from "../model/types";
+import { getCurrentTime } from "../helper/timeConverter";
+import { updateData } from "../redux/weatherSlice";
 
 type THomeProps = NativeStackScreenProps<StackNavigationParams, "home">;
 
 export default function Home({ navigation }: THomeProps) {
-  const { isLoading, isError, data } = useSelector(
+  const [refresh, setRefresh] = useState(false);
+  const { isLoading, isError, data, lastUpdated } = useSelector(
     (state: RootState) => state.weather
   );
+  const currTemp: string = data.list[0]
+    ? data.list[0].main.temp.toFixed() + ""
+    : isError;
   const dispatch = useDispatch<AppDispatch>();
-  console.log("redux thunk data hh");
+
   useEffect(() => {
-    // dispatch(getWeatherDataThunk('mumbai'));
-  }, []);
+    dispatch(getWeatherDataThunk("mumbai")).then(() => {
+      dispatch(updateData({ lastUpdated: getCurrentTime() }));
+    });
+  }, [refresh]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -39,7 +50,7 @@ export default function Home({ navigation }: THomeProps) {
             onPress={() => navigation.navigate("details")}
           >
             <Entypo name="location-pin" size={24} color="black" />
-            <Text style={styles.city}>Mumbai</Text>
+            <Text style={styles.city}>{data.city.name}</Text>
             <Entypo name="chevron-small-down" size={24} color="black" />
           </TouchableOpacity>
           <EvilIcons name="calendar" size={24} color="black" />
@@ -54,24 +65,53 @@ export default function Home({ navigation }: THomeProps) {
         </View>
         <View
           style={{
-            marginVertical: 25,
+            marginTop: 10,
+            marginBottom: 30,
             alignItems: "center",
             justifyContent: "center",
             height: "25%",
           }}
         >
-          <Text style={styles.status}>Thunderstorm !!</Text>
-          <View style={{ flexDirection: "row" }}>
-            <Text style={styles.temperature}>23</Text>
-            <Text style={styles.degree}>°</Text>
-            <Text style={styles.cel}>C</Text>
-          </View>
+          {isLoading ? (
+            <View style={styles.loading}>
+              <ActivityIndicator color={COLORS.lightPrimary} size={"large"} />
+              <Text style={{ color: COLORS.lightPrimary }}>Loading ...</Text>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.status}>
+                {data.list[0].weather[0].description}
+              </Text>
+              <View style={{ flexDirection: "row" }}>
+                <Text style={styles.temperature}>{currTemp}</Text>
+                <Text style={styles.degree}>°</Text>
+                <Text style={styles.cel}>C</Text>
+              </View>
+              <View style={{ flexDirection: "row" }}>
+                <Text style={{ color: "grey" }}>Updated at {lastUpdated}</Text>
+                <TouchableOpacity
+                  style={{ marginLeft: 10 }}
+                  onPress={() => setRefresh(!refresh)}
+                >
+                  <Feather name="refresh-cw" size={20} color="black" />
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
-        <View style={{ height: "30%" }}>
+
+        <View style={{ height: "30%", marginTop: 20 }}>
           <FlatList
-            data={[{}, {}, {}, {}]}
-            renderItem={() => <Card />}
-            // keyExtractor={}
+            ListEmptyComponent={() => (
+              <View>
+                <Text>Loading........</Text>
+              </View>
+            )}
+            data={data.list}
+            renderItem={({ item }: ListRenderItemInfo<List>) => (
+              <Card list={item} />
+            )}
+            keyExtractor={(item) => item.dt_txt}
             horizontal
             showsHorizontalScrollIndicator={false}
           />
@@ -129,5 +169,11 @@ const styles = StyleSheet.create({
   cel: {
     fontSize: 40,
     lineHeight: 110,
+  },
+  loading: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    color: COLORS.lightPrimary,
   },
 });

@@ -6,6 +6,7 @@ import { getWeatherDataThunk } from "./reduxThunk";
 
 //initial and default value of store
 const initialState :IStore = {
+    lastUpdated:'',
     isLoading :false,
     isError:'',
     data:{
@@ -22,8 +23,8 @@ const weatherSlice = createSlice({
     name:'weather',
     initialState:initialState,
     reducers:{
-        updateData:(state,action:PayloadAction<{isLoading:boolean}>)=>{
-            state.isLoading=action.payload.isLoading
+        updateData:(state,action:PayloadAction<{lastUpdated:string}>)=>{
+            state.lastUpdated=action.payload.lastUpdated
         }
     },
     extraReducers(builder) {
