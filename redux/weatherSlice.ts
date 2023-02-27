@@ -31,14 +31,14 @@ const weatherSlice = createSlice({
         builder.addCase(getWeatherDataThunk.pending,(state)=>{
             state.isLoading=true
         })
-        .addCase(getWeatherDataThunk.rejected,(state, action)=>{
-            console.log(action.payload)
+        .addCase(getWeatherDataThunk.rejected,(state, action:PayloadAction<any>)=>{
+            state.isError= action.payload.message
             state.isLoading=false;
-            state.isError="something went wrong"
         })
         .addCase(getWeatherDataThunk.fulfilled,(state,action)=>{
             state.isLoading=false;
-            state.data= action.payload
+            state.data= action.payload,
+            state.isError=""
         })
     },
 })

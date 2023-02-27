@@ -11,3 +11,7 @@ export const getWeatherData = async (city: string): Promise<AxiosResponse> => {
     return axios.get<IWeatherData>(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${OPEN_WEATHER_API_KEY}&units=metric`);
 
 }
+export const getWeatherDataByLatLad = async (lat: number,lon:number): Promise<AxiosResponse> => {
+    return axios.get<IWeatherData>(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${OPEN_WEATHER_API_KEY}&units=metric`);
+
+}

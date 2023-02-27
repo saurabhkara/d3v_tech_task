@@ -1,13 +1,13 @@
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
-  ListRenderItemInfo,
+  TextInput,
+  StyleSheet,
+  Alert
 } from "react-native";
-import React from "react";
+import React,{useState} from "react";
 import Modal from "react-native-modal";
-import cityData from "../helper/cityName";
 import COLORS from "../helper/colors";
 
 interface IModalProp {
@@ -16,35 +16,49 @@ interface IModalProp {
   onCity:(city:string)=>void;
 }
 
-export default function CityModal({ isVisiable, onClose,onCity }: IModalProp) {
+export default function CityModal({ isVisiable, onClose, onCity }: IModalProp) {
+  const [searchLoc, setSearchLoc] = useState('');
+  function validate(){
+    if(searchLoc){
+      onCity(searchLoc)
+    }else{
+      Alert.alert('Please Search correct City');
+    }
+  }
   return (
     <Modal
       isVisible={isVisiable}
       style={{
         backgroundColor: COLORS.secondaryDark,
         borderRadius: 20,
-        height: "100%",
+        height: "50%",
       }}
       onBackButtonPress={() => onClose()}
     >
-      <FlatList
-        data={cityData}
-        renderItem={({
-          item,
-        }: ListRenderItemInfo<{ country: string; city: string }>) => (
-          <TouchableOpacity
-            style={{
-              backgroundColor: COLORS.dark,
-              marginTop: 10,
-              borderRadius: 5,
-              margin: 5,
-            }}
-            onPress={()=>onCity(item.city)}
-          >
-            <Text style={{textAlign:'center',color:'white'}}>{item.city}</Text>
+      <View style={{alignItems:'center',justifyContent:'center'}}>
+          <View style={styles.input}>
+            <TextInput placeholder="Please search location" onChangeText={(text:string)=>setSearchLoc(text)}/>
+          </View>
+          <TouchableOpacity onPress={validate} style={styles.button}>
+              <Text style={{color:'blue'}}>Search Location</Text>
           </TouchableOpacity>
-        )}
-      />
+      </View>
     </Modal>
   );
 }
+
+const styles= StyleSheet.create({
+  button:{
+    backgroundColor:'white',
+    padding:15,
+    margin:5,
+    borderRadius:15,
+  }, 
+  input:{
+    backgroundColor:'white',
+    width:'90%',
+  padding:10,
+  marginVertical:20,
+  borderRadius:5
+  }
+})

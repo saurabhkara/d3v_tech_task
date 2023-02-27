@@ -36,21 +36,29 @@ export default function Home({ navigation }: THomeProps) {
     ? data.list[0].main.temp.toFixed() + ""
     : isError;
 
-  const currWeather = data.list[0] ? data.list[0].weather[0].description : "";
+  const currWeather: string = data?.list[0]
+    ? data.list[0].weather[0].description
+    : "";
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     async function fetchCity() {
+      const city = await AsyncStorage.getItem("city");
       try {
-        const city = await AsyncStorage.getItem("city");
+        if (!city) {
+          dispatch(getWeatherDataThunk({ lat: 1, lad: 1 }))
+            .then(() => {
+              dispatch(updateData({ lastUpdated: getCurrentTime() }));
+            })
+            .then(async () => {
+              await AsyncStorage.setItem("city", data.city.name);
+            })
+            .catch((error) => {
+              console.log("error happend", error);
+            });
+        }
         if (city) {
-          dispatch(getWeatherDataThunk(city)).then(() => {
-            dispatch(updateData({ lastUpdated: getCurrentTime() }));
-          });
-        } else {
-          //setting city for first time user
-          await AsyncStorage.setItem("city", "delhi");
-          dispatch(getWeatherDataThunk("delhi")).then(() => {
+          dispatch(getWeatherDataThunk({ city: city })).then(() => {
             dispatch(updateData({ lastUpdated: getCurrentTime() }));
           });
         }
@@ -60,6 +68,8 @@ export default function Home({ navigation }: THomeProps) {
     }
     fetchCity();
   }, [refresh]);
+
+  // AsyncStorage.clear()
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -86,7 +96,7 @@ export default function Home({ navigation }: THomeProps) {
         <View
           style={{
             marginTop: 10,
-            marginBottom: 30,
+            marginBottom: 20,
             alignItems: "center",
             justifyContent: "center",
             height: "25%",
@@ -95,7 +105,7 @@ export default function Home({ navigation }: THomeProps) {
           {isLoading ? (
             <Loader />
           ) : isError ? (
-            <ErrorMsg onPress={()=>setRefresh(!refresh)}/>
+            <ErrorMsg onPress={() => setRefresh(!refresh)} />
           ) : (
             <>
               <Text style={styles.status}>{currWeather}</Text>
@@ -120,11 +130,13 @@ export default function Home({ navigation }: THomeProps) {
         <View style={{ height: "30%", marginTop: 20 }}>
           <FlatList
             ListEmptyComponent={() => <Loader />}
-            data={data.list}
+            data={data.list && data.list}
             renderItem={({ item }: ListRenderItemInfo<List>) => (
               <Card list={item} />
             )}
-            contentContainerStyle={data.list.length===0 && {flex:1, justifyContent:'center'}}
+            contentContainerStyle={
+              data?.list.length === 0 && { flex: 1, justifyContent: "center" }
+            }
             keyExtractor={(item) => item.dt_txt}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -143,7 +155,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    marginVertical: "8%",
+    marginVertical: "6%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -163,18 +175,19 @@ const styles = StyleSheet.create({
   imageContainer: {
     justifyContent: "center",
     alignItems: "center",
-    height: "15%",
+    height: "12%",
   },
   image: {
     height: "100%",
-    width: 150,
+    width: 120,
+    resizeMode: "contain",
   },
   status: {
     fontSize: 20,
     marginVertical: 10,
   },
   temperature: {
-    fontSize: 70,
+    fontSize: 60,
   },
   degree: {
     fontSize: 35,
